@@ -168,8 +168,11 @@ We appreciate the support for free and open source software!
 
 This project is supported by:
 
-- [Jetbrains](https://www.jetbrains.com/?from=gocron)
-- [Sentry](https://sentry.io/welcome/)
+[Jetbrains](https://www.jetbrains.com/?from=gocron)
+![JetBrains logo](https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.png)
+
+
+[Sentry](https://sentry.io/welcome/)
 
 ## Star History
 
