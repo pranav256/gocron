@@ -954,3 +954,14 @@ func WithMonitor(monitor Monitor) SchedulerOption {
 		return nil
 	}
 }
+
+// WithMonitorStatus sets the metrics provider to be used by the Scheduler.
+func WithMonitorStatus(monitor MonitorStatus) SchedulerOption {
+	return func(s *scheduler) error {
+		if monitor == nil {
+			return ErrWithMonitorNil
+		}
+		s.exec.monitorStatus = monitor
+		return nil
+	}
+}
