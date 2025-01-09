@@ -104,6 +104,29 @@ func ExampleBeforeJobRuns() {
 	)
 }
 
+func ExampleBeforeJobRunsSkipIfBeforeFuncErrors() {
+	s, _ := gocron.NewScheduler()
+	defer func() { _ = s.Shutdown() }()
+
+	_, _ = s.NewJob(
+		gocron.DurationJob(
+			time.Second,
+		),
+		gocron.NewTask(
+			func() {
+				fmt.Println("Will never run, because before job func errors")
+			},
+		),
+		gocron.WithEventListeners(
+			gocron.BeforeJobRunsSkipIfBeforeFuncErrors(
+				func(jobID uuid.UUID, jobName string) error {
+					return fmt.Errorf("error")
+				},
+			),
+		),
+	)
+}
+
 func ExampleCronJob() {
 	s, _ := gocron.NewScheduler()
 	defer func() { _ = s.Shutdown() }()

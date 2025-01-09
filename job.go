@@ -40,12 +40,13 @@ type internalJob struct {
 	startImmediately   bool
 	stopTime           time.Time
 	// event listeners
-	afterJobRuns          func(jobID uuid.UUID, jobName string)
-	beforeJobRuns         func(jobID uuid.UUID, jobName string)
-	afterJobRunsWithError func(jobID uuid.UUID, jobName string, err error)
-	afterJobRunsWithPanic func(jobID uuid.UUID, jobName string, recoverData any)
-	afterLockError        func(jobID uuid.UUID, jobName string, err error)
-	disabledLocker        bool
+	afterJobRuns                        func(jobID uuid.UUID, jobName string)
+	beforeJobRuns                       func(jobID uuid.UUID, jobName string)
+	beforeJobRunsSkipIfBeforeFuncErrors func(jobID uuid.UUID, jobName string) error
+	afterJobRunsWithError               func(jobID uuid.UUID, jobName string, err error)
+	afterJobRunsWithPanic               func(jobID uuid.UUID, jobName string, recoverData any)
+	afterLockError                      func(jobID uuid.UUID, jobName string, err error)
+	disabledLocker                      bool
 
 	locker Locker
 }
@@ -720,6 +721,19 @@ func BeforeJobRuns(eventListenerFunc func(jobID uuid.UUID, jobName string)) Even
 			return ErrEventListenerFuncNil
 		}
 		j.beforeJobRuns = eventListenerFunc
+		return nil
+	}
+}
+
+// BeforeJobRunsSkipIfBeforeFuncErrors is used to listen for when a job is about to run and
+// then runs the provided function. If the provided function returns an error, the job will be
+// rescheduled and the current run will be skipped.
+func BeforeJobRunsSkipIfBeforeFuncErrors(eventListenerFunc func(jobID uuid.UUID, jobName string) error) EventListener {
+	return func(j *internalJob) error {
+		if eventListenerFunc == nil {
+			return ErrEventListenerFuncNil
+		}
+		j.beforeJobRunsSkipIfBeforeFuncErrors = eventListenerFunc
 		return nil
 	}
 }

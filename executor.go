@@ -389,7 +389,20 @@ func (e *executor) runJob(j internalJob, jIn jobIn) {
 		}
 		defer func() { _ = lock.Unlock(j.ctx) }()
 	}
+
 	_ = callJobFuncWithParams(j.beforeJobRuns, j.id, j.name)
+
+	err := callJobFuncWithParams(j.beforeJobRunsSkipIfBeforeFuncErrors, j.id, j.name)
+	if err != nil {
+		e.sendOutForRescheduling(&jIn)
+
+		select {
+		case e.jobsOutCompleted <- j.id:
+		case <-e.ctx.Done():
+		}
+
+		return
+	}
 
 	e.sendOutForRescheduling(&jIn)
 	select {
@@ -398,7 +411,6 @@ func (e *executor) runJob(j internalJob, jIn jobIn) {
 	}
 
 	startTime := time.Now()
-	var err error
 	if j.afterJobRunsWithPanic != nil {
 		err = e.callJobWithRecover(j)
 	} else {
