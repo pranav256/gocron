@@ -708,11 +708,12 @@ func WithIdentifier(id uuid.UUID) JobOption {
 	}
 }
 
-// WithContext sets the parent context for the job
+// WithContext sets the parent context for the job.
 // If you set the first argument of your Task func to be a context.Context,
-// gocron will pass in a context (either the default Job context, or one
-// provided via WithContext) to the job and will cancel the context on shutdown.
-// This allows you to listen for and handle cancellation within your job.
+// gocron will pass in the provided context to the job and will cancel the
+// context on shutdown. If you cancel the context the job will no longer be
+// scheduled as well. This allows you to both control the job via a context
+// and listen for and handle cancellation within your job.
 func WithContext(ctx context.Context) JobOption {
 	return func(j *internalJob, _ time.Time) error {
 		if ctx == nil {
