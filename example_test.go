@@ -362,8 +362,8 @@ func ExampleNewTask() {
 		gocron.DurationJob(time.Second),
 		gocron.NewTask(
 			func(ctx context.Context) {
-				// gocron will pass in a context (either the default Job context, or one provided via WithContext)
-				// to the job and will cancel the context on shutdown.
+				// gocron will pass in a context (either the default Job context, or one
+				// provided via WithContext) to the job and will cancel the context on shutdown.
 				// This allows you to listen for and handle cancellation within your job.
 			},
 		),
@@ -627,8 +627,8 @@ func ExampleWithContext() {
 		),
 		gocron.NewTask(
 			func(ctx context.Context) {
-				// gocron will pass in a context (either the default Job context, or one provided via WithContext)
-				// to the job and will cancel the context on shutdown.
+				// gocron will pass in a context (either the default Job context, or one
+				// provided via WithContext) to the job and will cancel the context on shutdown.
 				// This allows you to listen for and handle cancellation within your job.
 			},
 		),
