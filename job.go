@@ -18,11 +18,12 @@ import (
 // internalJob stores the information needed by the scheduler
 // to manage scheduling, starting and stopping the job
 type internalJob struct {
-	ctx    context.Context
-	cancel context.CancelFunc
-	id     uuid.UUID
-	name   string
-	tags   []string
+	ctx       context.Context
+	parentCtx context.Context
+	cancel    context.CancelFunc
+	id        uuid.UUID
+	name      string
+	tags      []string
 	jobSchedule
 
 	// as some jobs may queue up, it's possible to
@@ -699,6 +700,14 @@ func WithIdentifier(id uuid.UUID) JobOption {
 		}
 
 		j.id = id
+		return nil
+	}
+}
+
+// WithContext sets the parent context for the job
+func WithContext(ctx context.Context) JobOption {
+	return func(j *internalJob, _ time.Time) error {
+		j.parentCtx = ctx
 		return nil
 	}
 }

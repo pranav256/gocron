@@ -361,6 +361,41 @@ func TestScheduler_StopTimeout(t *testing.T) {
 	}
 }
 
+func TestScheduler_StopLongRunningJobs(t *testing.T) {
+	t.Run("start, run job, stop jobs before job is completed", func(t *testing.T) {
+		s := newTestScheduler(t,
+			WithStopTimeout(50*time.Millisecond),
+		)
+
+		_, err := s.NewJob(
+			DurationJob(
+				50*time.Millisecond,
+			),
+			NewTask(
+				func(ctx context.Context) {
+					select {
+					case <-ctx.Done():
+					case <-time.After(100 * time.Millisecond):
+						t.Fatal("job can not been canceled")
+					}
+				},
+			),
+			WithStartAt(
+				WithStartImmediately(),
+			),
+			WithSingletonMode(LimitModeReschedule),
+		)
+		require.NoError(t, err)
+
+		s.Start()
+
+		time.Sleep(20 * time.Millisecond)
+		// the running job is canceled, no unexpected timeout error
+		require.NoError(t, s.StopJobs())
+		time.Sleep(100 * time.Millisecond)
+	})
+}
+
 func TestScheduler_Shutdown(t *testing.T) {
 	defer verifyNoGoroutineLeaks(t)
 
