@@ -238,11 +238,8 @@ func (s *scheduler) stopScheduler() {
 	for _, j := range s.jobs {
 		j.stop()
 	}
-	for id, j := range s.jobs {
+	for _, j := range s.jobs {
 		<-j.ctx.Done()
-
-		j.ctx, j.cancel = context.WithCancel(s.shutdownCtx)
-		s.jobs[id] = j
 	}
 	var err error
 	if s.started {
@@ -254,6 +251,21 @@ func (s *scheduler) stopScheduler() {
 			err = ErrStopExecutorTimedOut
 		}
 	}
+	for id, j := range s.jobs {
+		oldCtx := j.ctx
+		if j.parentCtx == nil {
+			j.parentCtx = s.shutdownCtx
+		}
+		j.ctx, j.cancel = context.WithCancel(j.parentCtx)
+
+		// also replace the old context with the new one in the parameters
+		if len(j.parameters) > 0 && j.parameters[0] == oldCtx {
+			j.parameters[0] = j.ctx
+		}
+
+		s.jobs[id] = j
+	}
+
 	s.stopErrCh <- err
 	s.started = false
 	s.logger.Debug("gocron: scheduler stopped")
