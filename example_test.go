@@ -636,6 +636,35 @@ func ExampleWithContext() {
 	)
 }
 
+var _ gocron.Cron = (*customCron)(nil)
+
+type customCron struct{}
+
+func (c customCron) IsValid(crontab string, location *time.Location, now time.Time) error {
+	return nil
+}
+
+func (c customCron) Next(lastRun time.Time) time.Time {
+	return time.Now().Add(time.Second)
+}
+
+func ExampleWithCronImplementation() {
+	s, _ := gocron.NewScheduler()
+	defer func() { _ = s.Shutdown() }()
+	_, _ = s.NewJob(
+		gocron.CronJob(
+			"* * * * *",
+			false,
+		),
+		gocron.NewTask(
+			func() {},
+		),
+		gocron.WithCronImplementation(
+			&customCron{},
+		),
+	)
+}
+
 func ExampleWithDisabledDistributedJobLocker() {
 	// var _ gocron.Locker = (*myLocker)(nil)
 	//
