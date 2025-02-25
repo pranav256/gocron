@@ -146,7 +146,7 @@ type defaultCron struct {
 	withSeconds  bool
 }
 
-func (r *defaultCron) IsValid(crontab string, location *time.Location, now time.Time) error {
+func (c *defaultCron) IsValid(crontab string, location *time.Location, now time.Time) error {
 	var withLocation string
 	if strings.HasPrefix(crontab, "TZ=") || strings.HasPrefix(crontab, "CRON_TZ=") {
 		withLocation = crontab
@@ -161,7 +161,7 @@ func (r *defaultCron) IsValid(crontab string, location *time.Location, now time.
 		err          error
 	)
 
-	if r.withSeconds {
+	if c.withSeconds {
 		p := cron.NewParser(cron.SecondOptional | cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow | cron.Descriptor)
 		cronSchedule, err = p.Parse(withLocation)
 	} else {
@@ -173,15 +173,15 @@ func (r *defaultCron) IsValid(crontab string, location *time.Location, now time.
 	if cronSchedule.Next(now).IsZero() {
 		return ErrCronJobInvalid
 	}
-	r.cronSchedule = cronSchedule
+	c.cronSchedule = cronSchedule
 	return nil
 }
 
-func (r *defaultCron) Next(lastRun time.Time) time.Time {
-	return r.cronSchedule.Next(lastRun)
+func (c *defaultCron) Next(lastRun time.Time) time.Time {
+	return c.cronSchedule.Next(lastRun)
 }
 
-// default cron job implimentation
+// default cron job implementation
 var _ JobDefinition = (*cronJobDefinition)(nil)
 
 type cronJobDefinition struct {
@@ -195,7 +195,7 @@ func (c cronJobDefinition) setup(j *internalJob, location *time.Location, now ti
 	}
 
 	if err := c.cron.IsValid(c.crontab, location, now); err != nil {
-	    return err
+		return err
 	}
 
 	j.jobSchedule = &cronJob{crontab: c.crontab, cronSchedule: c.cron}
