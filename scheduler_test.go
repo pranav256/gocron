@@ -567,6 +567,15 @@ func TestScheduler_Shutdown(t *testing.T) {
 		_, err = j.NextRun()
 		assert.ErrorIs(t, err, ErrJobNotFound)
 	})
+
+	t.Run("calling shutdown multiple times is a no-op", func(t *testing.T) {
+		s := newTestScheduler(t)
+
+		s.Start()
+
+		assert.NoError(t, s.Shutdown())
+		assert.NoError(t, s.Shutdown())
+	})
 }
 
 func TestScheduler_NewJob(t *testing.T) {
